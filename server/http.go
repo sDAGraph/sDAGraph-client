@@ -30,7 +30,7 @@ func readFile(filename string) (map[string]string, error) {
 
 func httpSet (){
 	absPath, _ := filepath.Abs("../server/config.json")
-	fmt.Println("absPath: ",absPath)
+	//fmt.Println("absPath: ",absPath)
 	config,err :=readFile(absPath)//"config.json")
 	if(err!=nil){
 		fmt.Println("error:", err)

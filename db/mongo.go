@@ -6,6 +6,12 @@ import(
         "gopkg.in/mgo.v2/bson"
 )
 
+type User struct {
+    Name string
+    Id string
+    Number uint
+}
+
 func GetDB(ip string, dbName string) (*mgo.Database,*mgo.Session) {
 	session, err := mgo.Dial(ip)
 	if err != nil {
@@ -17,7 +23,7 @@ func GetDB(ip string, dbName string) (*mgo.Database,*mgo.Session) {
 }
 
 func DefaultGetDB() *mgo.Database {
-	session, err := mgo.Dial("mongodb://192.168.51.202:27017")
+	session, err := mgo.Dial("mongodb://192.168.51.212:27017")
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +48,7 @@ func Update(db *mgo.Database, collection string, target interface{}, content int
 
 func FindOne(db *mgo.Database, collection string, content interface{}) (interface{}){
         c := db.C(collection)
-	var users bson.M
+	var users User//bson.M
         c.Find(content).One(&users)
 	return users
 }

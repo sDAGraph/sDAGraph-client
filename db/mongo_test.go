@@ -22,8 +22,9 @@ func TestMongo(t *testing.T) {
 	result2 := FindOne(db,"test",in)
 	fmt.Println("final:",result2)
 	//尋找多個
-	result3 := FindAll(db,"test",in)
-	fmt.Println(result3[0])
+	in2 := bson.M{"a": 1}
+	result3 := FindAll(db,"test",in2)
+	fmt.Println("result:",result3[0])
 	//資料庫關閉
 	session.Close()
 }
