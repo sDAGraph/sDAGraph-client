@@ -1,5 +1,6 @@
 {
 	"port":":9003",
 	"db":"",
-	"key":""
+	"key":"",
+	"version":"dev"
 }

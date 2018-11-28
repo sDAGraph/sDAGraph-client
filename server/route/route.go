@@ -31,7 +31,8 @@ func readFile(filename string) (map[string]string, error) {
     return j, nil
 }
 
-func Router(){
+func Router(selversion string){
+    fmt.Println("selversion",selversion)
     GetNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
         res.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -44,7 +45,7 @@ func Router(){
         }
 	c := params.Chain()
 	fmt.Println(c)
-        fmt.Println(c.Version.Sue["dev"].MongoIp)
+        fmt.Println("version",c.Version.Sue[selversion].MongoIp)
 
         db, session := sDAGraph_mongo.GetDB(dbconfig["ip"], dbconfig["dbname"])
 	//db, session := sDAGraph_mongo.GetDB("mongodb://192.168.51.202:27017", "sDAG")

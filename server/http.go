@@ -35,7 +35,7 @@ func httpSet (){
 	if(err!=nil){
 		fmt.Println("error:", err)
 	}
-	route.Router()
+	route.Router(config["version"])
 	fmt.Println("connect port"+config["port"])
 	err2:= http.ListenAndServe(config["port"], nil)
 	if err2 != nil {
