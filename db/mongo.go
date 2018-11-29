@@ -4,13 +4,14 @@ import(
 	"fmt"
         "gopkg.in/mgo.v2"
         "gopkg.in/mgo.v2/bson"
+	"sDAGraph-client/params"
 )
-
+/*
 type User struct {
     Name string
     Id string
     Number uint
-}
+}*/
 
 func GetDB(ip string, dbName string) (*mgo.Database,*mgo.Session) {
 	session, err := mgo.Dial(ip)
@@ -48,7 +49,7 @@ func Update(db *mgo.Database, collection string, target interface{}, content int
 
 func FindOne(db *mgo.Database, collection string, content interface{}) (interface{}){
         c := db.C(collection)
-	var users User//bson.M
+	var users params.NewsData//bson.M
         c.Find(content).One(&users)
 	return users
 }

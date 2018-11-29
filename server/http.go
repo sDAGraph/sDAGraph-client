@@ -11,7 +11,7 @@ import (
 	//"lurcury/types"
 	"time"
 	"path/filepath"
-
+        "os"
 )
 
 func readFile(filename string) (map[string]string, error) {
@@ -30,12 +30,16 @@ func readFile(filename string) (map[string]string, error) {
 
 func httpSet (){
 	absPath, _ := filepath.Abs("../server/config.json")
+	selectVer := "dev"
 	//fmt.Println("absPath: ",absPath)
 	config,err :=readFile(absPath)//"config.json")
 	if(err!=nil){
 		fmt.Println("error:", err)
 	}
-	route.Router(config["version"])
+	if (len(os.Args) >= 2){
+		selectVer = os.Args[1]
+	}
+	route.Router(selectVer)
 	fmt.Println("connect port"+config["port"])
 	err2:= http.ListenAndServe(config["port"], nil)
 	if err2 != nil {

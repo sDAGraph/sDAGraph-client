@@ -5,6 +5,12 @@ import (
 	"math/big"
 ) 
 
+type NewsData struct {
+    Name string
+    Id string
+    Number uint
+}
+
 type ChainConfigStructure struct {
 	Id int64
 	Hash string
