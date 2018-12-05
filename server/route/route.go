@@ -6,8 +6,8 @@ import (
     "io/ioutil"
     "net/http"
     "sDAGraph-client/db"
-    "gopkg.in/mgo.v2/bson"
     "sDAGraph-client/params"
+    "gopkg.in/mgo.v2/bson"
 )
 
 type User struct {
@@ -19,59 +19,95 @@ func Router(selversion string){
     c := params.Chain()
     mongoIp := c.Version.Sue[selversion].MongoIp
     mongoName := c.Version.Sue[selversion].MongoName
-    mongoSession := c.Version.Sue[selversion].MongoSession
+    mongoCollection := c.Version.Sue[selversion].MongoCollection
+
+    GetAllNews := func (res http.ResponseWriter, req *http.Request){
+	res.Header().Add("Access-Control-Allow-Origin","*")
+	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+	users, err := sDAGraph_mongo.FindAll(db,mongoCollection)
+	session.Close()
+	if err != nil {
+		respondWithError(res, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithJson(res, http.StatusOK, users)
+    }
 
     GetNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
         res.Header().Add("Content-Type", "application/json; charset=utf-8")
-
+        
         b, _ := ioutil.ReadAll(req.Body)
         defer req.Body.Close()
 	fmt.Println("b:",string(b))
 	var newsdata User
         json.Unmarshal(b, &newsdata)
-
+        
     
 	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
 	in2 := bson.M{"id": "0xaaazz833"}
 	fmt.Println("in2:",in2)
-	in:= newsdata
-	fmt.Println("in:",in)
-	result2 := sDAGraph_mongo.FindOne(db,mongoSession,in)
+	result2 := sDAGraph_mongo.FindOne(db,mongoCollection,in2)
         fmt.Println("final:",result2)
 	respBody, _ := json.Marshal(result2)
 	session.Close()
 	res.Write([]byte(respBody))
     }
 
-    GetIndex := func (res http.ResponseWriter, req *http.Request){
+    GetNewsbyID := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
         
-	fmt.Println("ip:",mongoIp)
-	res.Write([]byte("456"))
+	val := req.FormValue("ID")
+	fmt.Println("param:",val)
+	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+	user, err := sDAGraph_mongo.FindbyID(db, mongoCollection, val)
+	if err != nil {
+		respondWithError(res, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+	session.Close()
+	respondWithJson(res, http.StatusOK, user)
     }
 
-    InsertData := func (res http.ResponseWriter, req *http.Request){
+    CreateNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
 
-        b, _ := ioutil.ReadAll(req.Body)
         defer req.Body.Close()
         var newsdata params.NewsData
-        json.Unmarshal(b, &newsdata)
-	fmt.Println(newsdata.Name)
- 
+
+	if err := json.NewDecoder(req.Body).Decode(&newsdata); err != nil {
+		respondWithError(res, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	fmt.Println("name:",newsdata.Name)
+
+	newsdata.ID = bson.NewObjectId()
 	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
-	//in := User{Name:"test2",Id:"0xasdf2342",Number:17}
 	in := newsdata
 	//插入
-        result := sDAGraph_mongo.Insert(db,mongoSession,in)
-        fmt.Println(result)
+        if err := sDAGraph_mongo.Insert(db,mongoCollection,in); err != nil {
+		respondWithError(res, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	session.Close()
-	res.Write([]byte("result"))
+	respondWithJson(res, http.StatusCreated, newsdata)
     }
 
+    http.HandleFunc("/getAllNews",GetAllNews)
     http.HandleFunc("/getNews", GetNews)
-    http.HandleFunc("/getIndex", GetIndex)
+    http.HandleFunc("/getNewsbyID", GetNewsbyID)
 
-    http.HandleFunc("/insertData", InsertData)
+    http.HandleFunc("/createNews", CreateNews)
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string) {
+	respondWithJson(w, code, map[string]string{"error": msg})
+}
+
+func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
 }

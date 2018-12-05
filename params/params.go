@@ -3,12 +3,13 @@ package params
 import (
 	//"fmt"
 	"math/big"
+	"gopkg.in/mgo.v2/bson"
 ) 
 
 type NewsData struct {
-    Name string
-    Id string
-    Number uint
+    ID         bson.ObjectId `bson:"_id" json:"id"`
+    Name       string `bson:"name" json:"name"`
+    Number     uint `bson:"number" json:"number"`
 }
 
 type ChainConfigStructure struct {
@@ -27,7 +28,7 @@ type EnvData struct {
         Consensus string
 	MongoIp string
 	MongoName string
-	MongoSession string
+	MongoCollection string
 }
 
 type Env struct {
@@ -43,7 +44,7 @@ func Chain()(*ChainConfigStructure){
 		BlockSpeed: 1,
 		MongoIp:"mongodb://192.168.51.202:27017",
 		MongoName:"sDAG",
-		MongoSession:"test",
+		MongoCollection:"test",
 	}
 	prod := &EnvData{
                 Fee : big.NewInt(10),
@@ -52,7 +53,7 @@ func Chain()(*ChainConfigStructure){
                 BlockSpeed: 1,
                 MongoIp:"mongodb://192.168.51.202:27017",
 		MongoName:"sDAG",
-                MongoSession:"test",
+                MongoCollection:"test",
         }
 	v := &Env{
 		Sue : make(map[string]*EnvData),

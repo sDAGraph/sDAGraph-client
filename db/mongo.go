@@ -54,11 +54,29 @@ func FindOne(db *mgo.Database, collection string, content interface{}) (interfac
 	return users
 }
 
+func FindbyID(db *mgo.Database, collection string, id string) (params.NewsData, error){
+        c := db.C(collection)
+        var users params.NewsData//bson.M
+        //bsonid := bson.ObjectIdHex(id)
+        //fmt.Println("bsonId1:",bsonid)
+	//err := c.FindId(bsonid).One(&users)
+	err := c.FindId(bson.ObjectIdHex(id)).One(&users)
+	return users, err
+}
+
+func FindAll(db *mgo.Database, collection string) ([]params.NewsData, error){//interface{}){
+        c := db.C(collection)
+        var users []params.NewsData
+	err := c.Find(bson.M{}).All(&users)
+        return users, err
+}
+
+/*
 func FindAll(db *mgo.Database, collection string, content interface{}) ([]bson.M){//interface{}){
         c := db.C(collection)
         var users []bson.M
         c.Find(content).All(&users)
         return users
 }
-
+*/
 
