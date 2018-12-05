@@ -47,11 +47,11 @@ func Update(db *mgo.Database, collection string, target interface{}, content int
         }
 }
 
-func FindOne(db *mgo.Database, collection string, content interface{}) (interface{}){
+func FindOne(db *mgo.Database, collection string, content interface{}) (interface{}, error){
         c := db.C(collection)
 	var users params.NewsData//bson.M
-        c.Find(content).One(&users)
-	return users
+	err := c.Find(content).One(&users)
+	return users, err
 }
 
 func FindbyID(db *mgo.Database, collection string, id string) (params.NewsData, error){

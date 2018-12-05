@@ -2,6 +2,7 @@ package route
 
 import (
     "fmt"
+    //"strconv"
     "encoding/json"
     "io/ioutil"
     "net/http"
@@ -33,7 +34,7 @@ func Router(selversion string){
 	respondWithJson(res, http.StatusOK, users)
     }
 
-    GetNews := func (res http.ResponseWriter, req *http.Request){
+    GetNewsold := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
         res.Header().Add("Content-Type", "application/json; charset=utf-8")
         
@@ -42,31 +43,52 @@ func Router(selversion string){
 	fmt.Println("b:",string(b))
 	var newsdata User
         json.Unmarshal(b, &newsdata)
-        
-    
-	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+
+	//db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
 	in2 := bson.M{"id": "0xaaazz833"}
 	fmt.Println("in2:",in2)
-	result2 := sDAGraph_mongo.FindOne(db,mongoCollection,in2)
+	/*esult2 := sDAGraph_mongo.FindOne(db,mongoCollection,in2)
         fmt.Println("final:",result2)
 	respBody, _ := json.Marshal(result2)
 	session.Close()
-	res.Write([]byte(respBody))
+	res.Write([]byte(respBody))*/
     }
 
-    GetNewsbyID := func (res http.ResponseWriter, req *http.Request){
+    GetNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
         
-	val := req.FormValue("ID")
-	fmt.Println("param:",val)
-	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
-	user, err := sDAGraph_mongo.FindbyID(db, mongoCollection, val)
-	if err != nil {
-		respondWithError(res, http.StatusBadRequest, "Invalid ID")
-		return
+	if (req.Method == "GET") {
+	    param := req.FormValue("param")
+	    value := req.FormValue("value")
+	    fmt.Println("param:",param)
+	    fmt.Println("val2:",value)
+	    db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+	    if (param == "id") {
+	    	user, err := sDAGraph_mongo.FindbyID(db, mongoCollection, value)
+                if err != nil {
+                    respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                    return
+                }
+		respondWithJson(res, http.StatusOK, user)
+	    }else{
+        	in2 := bson.M{param : value}
+        	fmt.Println("in2:",in2)
+        	user, err := sDAGraph_mongo.FindOne(db,mongoCollection,in2)
+                if err != nil {
+                    respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                    return
+                }
+		respondWithJson(res, http.StatusOK, user)
+	    }
+	    /*if err != nil {
+                respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                return
+	    }
+	    respondWithJson(res, http.StatusOK, user)
+	    */
+	    session.Close()
 	}
-	session.Close()
-	respondWithJson(res, http.StatusOK, user)
+
     }
 
     CreateNews := func (res http.ResponseWriter, req *http.Request){
@@ -95,8 +117,8 @@ func Router(selversion string){
     }
 
     http.HandleFunc("/getAllNews",GetAllNews)
+    http.HandleFunc("/getNewsold", GetNewsold)
     http.HandleFunc("/getNews", GetNews)
-    http.HandleFunc("/getNewsbyID", GetNewsbyID)
 
     http.HandleFunc("/createNews", CreateNews)
 }
