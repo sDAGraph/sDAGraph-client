@@ -28,8 +28,8 @@ func Router(selversion string){
 	users, err := sDAGraph_mongo.FindAll(db,mongoCollection)
 	session.Close()
 	if err != nil {
-		respondWithError(res, http.StatusInternalServerError, err.Error())
-		return
+	    respondWithError(res, http.StatusInternalServerError, err.Error())
+	    return
 	}
 	respondWithJson(res, http.StatusOK, users)
     }
@@ -56,13 +56,13 @@ func Router(selversion string){
 
     GetNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
-        
+	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
 	if (req.Method == "GET") {
 	    param := req.FormValue("param")
 	    value := req.FormValue("value")
 	    fmt.Println("param:",param)
 	    fmt.Println("val2:",value)
-	    db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+	   
 	    if (param == "id") {
 	    	user, err := sDAGraph_mongo.FindbyID(db, mongoCollection, value)
                 if err != nil {
@@ -86,8 +86,33 @@ func Router(selversion string){
 	    }
 	    respondWithJson(res, http.StatusOK, user)
 	    */
-	    session.Close()
+	} else{
+            defer req.Body.Close()
+	    var newsdata params.NewsData
+
+            if err := json.NewDecoder(req.Body).Decode(&newsdata); err != nil {
+                respondWithError(res, http.StatusBadRequest, "Invalid request payload")
+                return
+            }
+
+            if (req.Method == "PUT"){
+                err := sDAGraph_mongo.UpdatebyID(db, mongoCollection, newsdata)
+                if err  != nil {
+                    respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                    return
+                }
+
+	    }else if (req.Method == "DELETE"){
+                err := sDAGraph_mongo.Delete(db, mongoCollection, newsdata)
+                if err  != nil {
+                    respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                    return
+                }
+            }
+
+	    respondWithJson(res, http.StatusOK, map[string]string{"result": "success"})
 	}
+	session.Close()
 
     }
 
@@ -98,8 +123,8 @@ func Router(selversion string){
         var newsdata params.NewsData
 
 	if err := json.NewDecoder(req.Body).Decode(&newsdata); err != nil {
-		respondWithError(res, http.StatusBadRequest, "Invalid request payload")
-		return
+            respondWithError(res, http.StatusBadRequest, "Invalid request payload")
+	    return
 	}
 	fmt.Println("name:",newsdata.Name)
 
@@ -108,8 +133,8 @@ func Router(selversion string){
 	in := newsdata
 	//插入
         if err := sDAGraph_mongo.Insert(db,mongoCollection,in); err != nil {
-		respondWithError(res, http.StatusInternalServerError, err.Error())
-		return
+	    respondWithError(res, http.StatusInternalServerError, err.Error())
+	    return
 	}
 
 	session.Close()
@@ -124,12 +149,12 @@ func Router(selversion string){
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
-	respondWithJson(w, code, map[string]string{"error": msg})
+    respondWithJson(w, code, map[string]string{"error": msg})
 }
 
 func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
+    response, _ := json.Marshal(payload)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(code)
+    w.Write(response)
 }
