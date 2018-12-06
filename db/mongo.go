@@ -2,7 +2,11 @@ package sDAGraph_mongo
 
 import(
 	"fmt"
-        "gopkg.in/mgo.v2"
+	"os"
+    	"io"
+	"path/filepath"
+        
+	"gopkg.in/mgo.v2"
         "gopkg.in/mgo.v2/bson"
 	"sDAGraph-client/params"
 )
@@ -82,6 +86,55 @@ func Delete(db *mgo.Database, collection string, content params.NewsData) (error
 	c := db.C(collection)
 	err := c.Remove(&content)
 	return err
+}
+
+//create file
+func InsertFile(db *mgo.Database, collection string, content string) (error){
+	_, fileName := filepath.Split(content)
+	
+	c := db.GridFS(collection)
+	//fmt.Println("dir:",dir)
+	//fmt.Println("file:",file)
+
+	user, err := c.Create(fileName)
+	fmt.Println("create err:",err)
+
+	out, err2 := os.OpenFile(content, os.O_RDWR, 0666)
+	fmt.Println("open err:",err2)
+	
+	_,err = io.Copy(user, out)
+	//fmt.Println(err)
+	err = user.Close()
+	//fmt.Println(err)
+	err = out.Close()
+	//fmt.Println(err)
+
+	return err
+}
+
+
+func DloadFile(db *mgo.Database, collection string, content string) (error){
+        _, fileName := filepath.Split(content)
+
+	c := db.GridFS(collection)
+        user, _ := c.Open(fileName)
+	//fmt.Println("user:",user)
+    	out, _ := os.OpenFile(content, os.O_CREATE| os.O_RDWR, 0666)
+	_,err := io.Copy(out, user)
+	//fmt.Println("Openf err:",err)
+    	err = user.Close()
+	err = out.Close()
+
+    	return err
+}
+
+type fileinfo struct {
+    //文件大小
+    Length int32
+    //md5
+    Md5 string
+    //文件名
+    Filename string
 }
 
 /*
