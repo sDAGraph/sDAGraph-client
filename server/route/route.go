@@ -152,10 +152,11 @@ func Router(selversion string){
             return
         }
         fmt.Println("name:",newsdata.Abspath)
+	fmt.Println("abspath",newsdata.Abspath + newsdata.Name)
 
         //newsdata.ID = bson.NewObjectId()
         db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
-        in := newsdata.Abspath
+        in := newsdata
         //插入
         if err := sDAGraph_mongo.InsertFile(db,mongoCollection,in); err != nil {
             respondWithError(res, http.StatusInternalServerError, err.Error())
@@ -180,7 +181,7 @@ func Router(selversion string){
 
         //newsdata.ID = bson.NewObjectId()
         db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
-        in := newsdata.Abspath
+        in := newsdata
         //插入
         if err := sDAGraph_mongo.DloadFile(db,mongoCollection,in); err != nil {
             respondWithError(res, http.StatusInternalServerError, err.Error())
@@ -191,6 +192,42 @@ func Router(selversion string){
         respondWithJson(res, http.StatusCreated, newsdata)
     }
 
+    ReadNewsFile := func (res http.ResponseWriter, req *http.Request){
+        res.Header().Add("Access-Control-Allow-Origin","*")
+
+        //newsdata.ID = bson.NewObjectId()
+        db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+
+        data := sDAGraph_mongo.ReadAllFile(db,mongoCollection)
+        
+	session.Close()
+        respondWithJson(res, http.StatusOK,data)
+    }
+
+    DeleteNewsFile := func (res http.ResponseWriter, req *http.Request){
+        res.Header().Add("Access-Control-Allow-Origin","*")
+
+        defer req.Body.Close()
+        var newsdata params.NewsFile
+
+        if err := json.NewDecoder(req.Body).Decode(&newsdata); err != nil {
+            respondWithError(res, http.StatusBadRequest, "Invalid request payload")
+            return
+        }
+        fmt.Println("name:",newsdata.Abspath)
+
+        //newsdata.ID = bson.NewObjectId()
+        db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+        in := newsdata
+        //插入
+        if err := sDAGraph_mongo.DeleteFile(db,mongoCollection,in); err != nil {
+            respondWithError(res, http.StatusInternalServerError, err.Error())
+            return
+        }
+
+        session.Close()
+        respondWithJson(res, http.StatusCreated, newsdata)
+    }
 
     http.HandleFunc("/getAllNews",GetAllNews)
     http.HandleFunc("/getNewsold", GetNewsold)
@@ -200,6 +237,8 @@ func Router(selversion string){
 
     http.HandleFunc("/insertNewsFile", InsertNewsFile)
     http.HandleFunc("/downloadNewsFile", DownloadNewsFile)
+    http.HandleFunc("/readNewsFile", ReadNewsFile)
+    http.HandleFunc("/deleteNewsFile", DeleteNewsFile)
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {

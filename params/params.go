@@ -9,11 +9,14 @@ import (
 type NewsData struct {
     ID         bson.ObjectId `bson:"_id" json:"id"`
     Name       string `bson:"name" json:"name"`
-    Number     uint `bson:"number" json:"number"`
+    Intro      string `bson:"intro" json:"intro"`
+    Title      string `bson:"title" json:"title"`
+    Article    string `bson:"article" json:"article"`
 }
 
 type NewsFile struct{
     Abspath string `bson:"abspath" json:"abspath"`
+    Name string
 }
 
 type ChainConfigStructure struct {

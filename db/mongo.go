@@ -4,8 +4,8 @@ import(
 	"fmt"
 	"os"
     	"io"
-	"path/filepath"
-        
+	//"path/filepath"
+        "reflect"
 	"gopkg.in/mgo.v2"
         "gopkg.in/mgo.v2/bson"
 	"sDAGraph-client/params"
@@ -89,15 +89,15 @@ func Delete(db *mgo.Database, collection string, content params.NewsData) (error
 }
 
 //create file
-func InsertFile(db *mgo.Database, collection string, content string) (error){
-	_, fileName := filepath.Split(content)
+func InsertFile(db *mgo.Database, collection string, content params.NewsFile) (error){
+	//_, fileName := filepath.Split(content)
+	absPath := content.Abspath + content.Name
 	
 	c := db.GridFS(collection)
-
-	user, err := c.Create(fileName)
+	user, err := c.Create(content.Name)
 	fmt.Println("create err:",err)
 
-	out, err2 := os.OpenFile(content, os.O_RDWR, 0666)
+	out, err2 := os.OpenFile(absPath, os.O_RDWR, 0666)
 	fmt.Println("open err:",err2)
 	
 	_,err = io.Copy(user, out)
@@ -108,13 +108,14 @@ func InsertFile(db *mgo.Database, collection string, content string) (error){
 }
 
 
-func DloadFile(db *mgo.Database, collection string, content string) (error){
-        _, fileName := filepath.Split(content)
+func DloadFile(db *mgo.Database, collection string, content params.NewsFile) (error){
+        //_, fileName := filepath.Split(content)
+	absPath := content.Abspath + content.Name
 
 	c := db.GridFS(collection)
-        user, _ := c.Open(fileName)
+        user, _ := c.Open(content.Name)
 	//fmt.Println("user:",user)
-    	out, _ := os.OpenFile(content, os.O_CREATE| os.O_RDWR, 0666)
+    	out, _ := os.OpenFile(absPath, os.O_CREATE| os.O_RDWR, 0666)
 	_,err := io.Copy(out, user)
 	//fmt.Println("Openf err:",err)
     	err = user.Close()
@@ -122,6 +123,28 @@ func DloadFile(db *mgo.Database, collection string, content string) (error){
 
     	return err
 }
+
+func DeleteFile(db *mgo.Database, collection string, content params.NewsFile) (error){
+        c := db.GridFS(collection)
+        err := c.Remove(content.Name)
+        
+        return err
+}
+
+func ReadAllFile(db *mgo.Database, collection string) (interface{}){
+        c := db.GridFS(collection)
+        iter := c.Find(nil).Iter()
+
+	fmt.Println("iter type :",reflect.TypeOf(iter))
+
+    	result:=new(fileinfo)
+    	for iter.Next(&result) {
+    		fmt.Println(result)
+    	}
+
+        return result
+}
+
 
 type fileinfo struct {
     //文件大小
