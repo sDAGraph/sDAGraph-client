@@ -12,6 +12,10 @@ type NewsData struct {
     Number     uint `bson:"number" json:"number"`
 }
 
+type NewsFile struct{
+    Abspath string `bson:"abspath" json:"abspath"`
+}
+
 type ChainConfigStructure struct {
 	Id int64
 	Hash string

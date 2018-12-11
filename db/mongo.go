@@ -93,8 +93,6 @@ func InsertFile(db *mgo.Database, collection string, content string) (error){
 	_, fileName := filepath.Split(content)
 	
 	c := db.GridFS(collection)
-	//fmt.Println("dir:",dir)
-	//fmt.Println("file:",file)
 
 	user, err := c.Create(fileName)
 	fmt.Println("create err:",err)
@@ -103,11 +101,8 @@ func InsertFile(db *mgo.Database, collection string, content string) (error){
 	fmt.Println("open err:",err2)
 	
 	_,err = io.Copy(user, out)
-	//fmt.Println(err)
 	err = user.Close()
-	//fmt.Println(err)
 	err = out.Close()
-	//fmt.Println(err)
 
 	return err
 }

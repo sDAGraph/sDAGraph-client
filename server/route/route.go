@@ -75,7 +75,7 @@ func Router(selversion string){
         	fmt.Println("in2:",in2)
         	user, err := sDAGraph_mongo.FindOne(db,mongoCollection,in2)
                 if err != nil {
-                    respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                    respondWithError(res, http.StatusBadRequest, "Invalid data")
                     return
                 }
 		respondWithJson(res, http.StatusOK, user)
@@ -98,14 +98,14 @@ func Router(selversion string){
             if (req.Method == "PUT"){
                 err := sDAGraph_mongo.UpdatebyID(db, mongoCollection, newsdata)
                 if err  != nil {
-                    respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                    respondWithError(res, http.StatusBadRequest, "Invalid data")
                     return
                 }
 
 	    }else if (req.Method == "DELETE"){
                 err := sDAGraph_mongo.Delete(db, mongoCollection, newsdata)
                 if err  != nil {
-                    respondWithError(res, http.StatusBadRequest, "Invalid ID")
+                    respondWithError(res, http.StatusBadRequest, "Invalid data")
                     return
                 }
             }
@@ -116,7 +116,7 @@ func Router(selversion string){
 
     }
 
-    CreateNews := func (res http.ResponseWriter, req *http.Request){
+    InsertNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
 
         defer req.Body.Close()
@@ -141,11 +141,65 @@ func Router(selversion string){
 	respondWithJson(res, http.StatusCreated, newsdata)
     }
 
+    InsertNewsFile := func (res http.ResponseWriter, req *http.Request){
+        res.Header().Add("Access-Control-Allow-Origin","*")
+
+        defer req.Body.Close()
+        var newsdata params.NewsFile
+
+        if err := json.NewDecoder(req.Body).Decode(&newsdata); err != nil {
+            respondWithError(res, http.StatusBadRequest, "Invalid request payload")
+            return
+        }
+        fmt.Println("name:",newsdata.Abspath)
+
+        //newsdata.ID = bson.NewObjectId()
+        db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+        in := newsdata.Abspath
+        //插入
+        if err := sDAGraph_mongo.InsertFile(db,mongoCollection,in); err != nil {
+            respondWithError(res, http.StatusInternalServerError, err.Error())
+            return
+        }
+
+        session.Close()
+        respondWithJson(res, http.StatusCreated, newsdata)
+    }
+
+    DownloadNewsFile := func (res http.ResponseWriter, req *http.Request){
+        res.Header().Add("Access-Control-Allow-Origin","*")
+
+        defer req.Body.Close()
+        var newsdata params.NewsFile
+
+        if err := json.NewDecoder(req.Body).Decode(&newsdata); err != nil {
+            respondWithError(res, http.StatusBadRequest, "Invalid request payload")
+            return
+        }
+        fmt.Println("name:",newsdata.Abspath)
+
+        //newsdata.ID = bson.NewObjectId()
+        db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+        in := newsdata.Abspath
+        //插入
+        if err := sDAGraph_mongo.DloadFile(db,mongoCollection,in); err != nil {
+            respondWithError(res, http.StatusInternalServerError, err.Error())
+            return
+        }
+
+        session.Close()
+        respondWithJson(res, http.StatusCreated, newsdata)
+    }
+
+
     http.HandleFunc("/getAllNews",GetAllNews)
     http.HandleFunc("/getNewsold", GetNewsold)
     http.HandleFunc("/getNews", GetNews)
 
-    http.HandleFunc("/createNews", CreateNews)
+    http.HandleFunc("/insertNews", InsertNews)
+
+    http.HandleFunc("/insertNewsFile", InsertNewsFile)
+    http.HandleFunc("/downloadNewsFile", DownloadNewsFile)
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
