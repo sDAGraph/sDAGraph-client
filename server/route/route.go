@@ -24,6 +24,7 @@ func Router(selversion string){
 
     GetAllNews := func (res http.ResponseWriter, req *http.Request){
 	res.Header().Add("Access-Control-Allow-Origin","*")
+	fmt.Println("GetAllNews")
 	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
 	users, err := sDAGraph_mongo.FindAll(db,mongoCollection)
 	session.Close()
@@ -56,6 +57,8 @@ func Router(selversion string){
 
     GetNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
+
+	fmt.Println("GetNews")
 	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
 	if (req.Method == "GET") {
 	    param := req.FormValue("param")
@@ -118,6 +121,7 @@ func Router(selversion string){
 
     InsertNews := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
+	fmt.Println("InsertNews")
 
         defer req.Body.Close()
         var newsdata params.NewsData
@@ -143,6 +147,7 @@ func Router(selversion string){
 
     InsertNewsFile := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
+	fmt.Println("InsertNewsFile")
 
         defer req.Body.Close()
         var newsdata params.NewsFile
@@ -169,7 +174,7 @@ func Router(selversion string){
 
     DownloadNewsFile := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
-
+	fmt.Println("DownloadNewsFile")
         defer req.Body.Close()
         var newsdata params.NewsFile
 
@@ -194,7 +199,7 @@ func Router(selversion string){
 
     ReadNewsFile := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
-
+	fmt.Println("ReadNewsFile")
         //newsdata.ID = bson.NewObjectId()
         db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
 
@@ -206,7 +211,8 @@ func Router(selversion string){
 
     DeleteNewsFile := func (res http.ResponseWriter, req *http.Request){
         res.Header().Add("Access-Control-Allow-Origin","*")
-
+	
+	fmt.Println("DeleteNewsFile")
         defer req.Body.Close()
         var newsdata params.NewsFile
 

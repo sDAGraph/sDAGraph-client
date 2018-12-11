@@ -5,7 +5,7 @@ import(
 	"os"
     	"io"
 	//"path/filepath"
-        "reflect"
+        //"reflect"
 	"gopkg.in/mgo.v2"
         "gopkg.in/mgo.v2/bson"
 	"sDAGraph-client/params"
@@ -133,6 +133,13 @@ func DeleteFile(db *mgo.Database, collection string, content params.NewsFile) (e
 
 func ReadAllFile(db *mgo.Database, collection string) (interface{}){
         c := db.GridFS(collection)
+        var users []bson.M
+	err := c.Find(nil).All(&users)
+	fmt.Println("err:",err)	
+	
+	return users
+	/*
+	c := db.GridFS(collection)
         iter := c.Find(nil).Iter()
 
 	fmt.Println("iter type :",reflect.TypeOf(iter))
@@ -143,9 +150,10 @@ func ReadAllFile(db *mgo.Database, collection string) (interface{}){
     	}
 
         return result
+	*/
 }
 
-
+/*
 type fileinfo struct {
     //文件大小
     Length int32
@@ -154,7 +162,7 @@ type fileinfo struct {
     //文件名
     Filename string
 }
-
+*/
 /*
 func FindAll(db *mgo.Database, collection string, content interface{}) ([]bson.M){//interface{}){
         c := db.C(collection)
