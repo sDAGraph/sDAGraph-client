@@ -6,6 +6,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 ) 
 
+const UPLOAD_PATH string = "/home/administrator/upLoad/"
+
+type Img struct {
+    ImgName string `bson:"_id"`
+    ImgUrl  string `bson:"imgUrl"`
+}
+
 type NewsData struct {
     ID         bson.ObjectId `bson:"_id" json:"id"`
     Name       string `bson:"name" json:"name"`

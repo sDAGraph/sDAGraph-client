@@ -153,6 +153,24 @@ func ReadAllFile(db *mgo.Database, collection string) (interface{}){
 	*/
 }
 
+func TestinsFile(db *mgo.Database, collection string, content params.Img) (error){
+        //_, fileName := filepath.Split(content)
+
+        c := db.GridFS(collection)
+        user, err := c.Create(content.ImgName)
+        fmt.Println("create err:",err)
+
+        out, err2 := os.OpenFile(content.ImgUrl, os.O_RDWR, 0666)
+        fmt.Println("open err:",err2)
+        
+        _,err = io.Copy(user, out)
+        err = user.Close()
+        err = out.Close()
+
+        return err
+}
+
+
 /*
 type fileinfo struct {
     //文件大小

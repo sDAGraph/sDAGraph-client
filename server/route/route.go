@@ -3,6 +3,8 @@ package route
 import (
     "fmt"
     //"strconv"
+    "os"
+    "io"
     "encoding/json"
     "io/ioutil"
     "net/http"
@@ -235,6 +237,48 @@ func Router(selversion string){
         respondWithJson(res, http.StatusCreated, newsdata)
     }
 
+    TestFile := func (res http.ResponseWriter, req *http.Request){
+        res.Header().Add("Access-Control-Allow-Origin","*")
+	var in params.Img
+	db, session := sDAGraph_mongo.GetDB(mongoIp,mongoName)
+
+	req.ParseMultipartForm(1024)
+    	f, h, err := req.FormFile("file")
+    	if err != nil {
+            fmt.Println("error1: ", err)
+	    return
+    	}
+    	defer f.Close()
+
+    	in.ImgName = h.Filename
+    	in.ImgUrl = params.UPLOAD_PATH + h.Filename
+
+	fmt.Println("imgFormat:",in.ImgName)
+	fmt.Println("img.ImgUrl:",in.ImgUrl)
+
+    	h2, err:= os.Create(in.ImgUrl)
+    	if err != nil {
+        	fmt.Println(err)
+        	return
+    	}
+    	defer h2.Close()
+
+    	if _, err := io.Copy(h2, f); err != nil {
+		fmt.Println("error2: ", err)
+		return
+    	}
+	
+        if err := sDAGraph_mongo.TestinsFile(db,mongoCollection,in); err != nil {
+            respondWithError(res, http.StatusInternalServerError, err.Error())
+            return
+        }
+
+        session.Close()
+        respondWithJson(res, http.StatusCreated, in)
+
+
+    }
+
     http.HandleFunc("/getAllNews",GetAllNews)
     http.HandleFunc("/getNewsold", GetNewsold)
     http.HandleFunc("/getNews", GetNews)
@@ -245,6 +289,8 @@ func Router(selversion string){
     http.HandleFunc("/downloadNewsFile", DownloadNewsFile)
     http.HandleFunc("/readNewsFile", ReadNewsFile)
     http.HandleFunc("/deleteNewsFile", DeleteNewsFile)
+
+    http.HandleFunc("/testFile", TestFile)
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
