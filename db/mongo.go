@@ -171,22 +171,3 @@ func TestinsFile(db *mgo.Database, collection string, content params.Img) (error
 }
 
 
-/*
-type fileinfo struct {
-    //文件大小
-    Length int32
-    //md5
-    Md5 string
-    //文件名
-    Filename string
-}
-*/
-/*
-func FindAll(db *mgo.Database, collection string, content interface{}) ([]bson.M){//interface{}){
-        c := db.C(collection)
-        var users []bson.M
-        c.Find(content).All(&users)
-        return users
-}
-*/
-

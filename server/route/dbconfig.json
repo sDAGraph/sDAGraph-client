@@ -1,6 +1,0 @@
-{
-        "ip":"mongodb://192.168.51.202:27017",
-        "dbname":"sDAG",
-        "sessionname":"test"
-}
-
